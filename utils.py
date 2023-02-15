@@ -92,7 +92,7 @@ def parse_torrent(file: Path):
     logging.debug(f'uid: {file.stem} name: {data["info"]["name"]}\n'
                   f'is_file: {is_file} announce: {data["announce"]}\nfiles: {files}')
     return {
-        'uid': int(file.stem),
+        'uid': int(data['comment'].split('=')[-1]),
         'files': files,
         'is_file': is_file,
         'name': data['info']['name'],
@@ -102,10 +102,9 @@ def parse_torrent(file: Path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    file1 = Path('resources/torrents/369959.torrent')
-    file2 = Path('resources/torrents/369940.torrent')
+    file1 = Path('resources/torrents/1.torrent')
     data1 = parse_torrent(file1)
-    data2 = parse_torrent(file2)
-    conn = get_connect()
-    insert(conn, **data1)
-    insert(conn, **data2)
+    print(data1)
+    # conn = get_connect()
+    # insert(conn, **data1)
+    # insert(conn, **data2)

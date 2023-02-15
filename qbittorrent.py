@@ -42,6 +42,8 @@ def get_complete_list(qbt_client: Client):
     """
     complete_list = []
     for torrent in qbt_client.torrents_info():
+        if len(complete_list) > 100:
+            return complete_list
         time = torrent['completion_on']
         if time > 0:
             path = torrent['content_path']
@@ -58,7 +60,7 @@ def delete_torrent(qbt_client: Client, hash: str):
 
 if __name__ == '__main__':
     # load_proxy()
-    file = Path('resources/torrents/369940.torrent')
+    file = Path('resources/torrents/1.torrent')
     urls = ['https://lemonhd.org/download.php?id=369974&passkey=fc67569039db27dabb72585070994d2d']
     qbt_client = get_qbt_client()
     # download_from_file(qbt_client, file)

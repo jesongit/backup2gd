@@ -7,9 +7,9 @@ from sqlite3 import Connection
 from qbittorrentapi import Client
 
 from global_var import TORRENTS_PATH, RAW_PATH
-from sqlite import get_connect, update, select
+from sqlite import get_connect, update, select, insert
 from qbittorrent import get_qbt_client, get_complete_list, download_from_file
-from utils import zipfile, backup2gd, remove
+from utils import zipfile, backup2gd, remove, parse_torrent
 
 MAX_DOWNLOAD_TASK = 500
 
@@ -21,12 +21,17 @@ def deal_download_file(conn: Connection, qbt_client: Client):
             for path, ctime, hash, size in deal_list:
 
                 path = Path(path)
-                uid = path.parent.name
-                where = [('uid', uid)]
                 assert path.exists(), 'file no exist.'
 
-                update(conn, where=where, time=ctime, hash=hash, size=size, state=1)
+                data = parse_torrent(path)
+                data['time'] = ctime
+                data['hash'] = hash
+                data['size'] = size
+                data['state'] = 1
+                insert(conn, **data)
 
+                uid = data['uid']
+                where = [('uid', uid)]
                 zip_path = zipfile(path, uid)
                 update(conn, where=where, state=2)
                 remove(path)
@@ -61,7 +66,8 @@ if __name__ == '__main__':
 
     deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
     deal_thread.start()
+    deal_thread.join()
 
-    download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
-    download_thread.start()
-    download_thread.join()
+    # download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
+    # download_thread.start()
+    # download_thread.join()
