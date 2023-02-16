@@ -11,6 +11,7 @@ from global_var import ZIP_PATH
 from sqlite import get_connect, insert
 
 FCLONE_THREAD_CNT = 8
+FCLONE_LOG_FILE = 'resources/fclone.log'
 
 
 def remove(path: Path):
@@ -40,9 +41,11 @@ def zipfile(file: Path, target_name='test', password='lemon?all'):
         return target_path
 
 
-def backup2gd(file: Path, to='lemonbk4'):
+def backup2gd(file: Path, type, to='lemonbk1'):
     try:
-        ret = subprocess.run(f'fclone copyto --transfers={FCLONE_THREAD_CNT} {file.resolve()} {to}:AutoBackup/{file.name}')
+        # fclone -v -u copy --transfers {同时上传文件数} --log-file {log_dir} {本地文件} {lemonbk1}:{mv}/{id.7z}
+        ret = subprocess.run(f'fclone -v -u copy --transfers={FCLONE_THREAD_CNT} --log-file {FCLONE_LOG_FILE} '
+                             f'{file.resolve()} {to}:{type}/{file.name}')
         logging.info(f'backup {file.name} ret: {ret.returncode}')
         if ret.returncode == 0:
             remove(file)

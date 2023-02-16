@@ -8,7 +8,7 @@ from qbittorrentapi import Client
 
 from global_var import TORRENTS_PATH, RAW_PATH
 from sqlite import get_connect, update, select, insert
-from qbittorrent import get_qbt_client, get_complete_list, download_from_file
+from qbittorrent import get_qbt_client, get_complete_list, download_from_file, delete_torrent
 from utils import zipfile, backup2gd, remove
 
 MAX_DOWNLOAD_TASK = 500
@@ -20,17 +20,23 @@ def deal_download_file(conn: Connection, qbt_client: Client):
             deal_list = get_complete_list(qbt_client)
             for data in deal_list:
 
+                # 记录到数据库
                 path = Path(data['path'])
                 assert path.exists(), 'file no exist.'
                 insert(conn, **data)
 
+                # 压缩文件
                 uid = data['uid']
                 where = [('uid', uid)]
                 zip_path = zipfile(path, uid)
                 update(conn, where=where, state=2)
-                remove(path)
 
-                if backup2gd(zip_path):
+                # 删除源文件
+                remove(path)
+                delete_torrent(qbt_client, hash=data['hash'])
+
+                # 备份到gd
+                if backup2gd(zip_path, data['type']):
                     update(conn, where=where, state=3)
             time.sleep(60)
         except Exception as e:
