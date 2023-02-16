@@ -64,7 +64,7 @@ def get_complete_list(qbt_client: Client):
                 'time': time,
                 'state': 1
             }
-            complete_list.append(data)
+            complete_list.append((path, data))
 
     return complete_list
 

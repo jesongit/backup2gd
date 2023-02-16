@@ -18,12 +18,12 @@ def deal_download_file(conn: Connection, qbt_client: Client):
     while True:
         try:
             deal_list = get_complete_list(qbt_client)
-            for data in deal_list:
+            for path, data in deal_list:
 
                 logging.info(f'start deal {data}')
                 # 记录到数据库
                 name = data['name']
-                path = Path(data['path'])
+                path = Path(path)
                 assert path.exists(), 'file no exist.'
                 insert(conn, **data)
                 logging.info(f'insert to db. {name}')
@@ -65,7 +65,7 @@ def download_from_lemon(conn: Connection, qbt_client: Client):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO, filename='backup.log')
+    logging.basicConfig(level=logging.INFO, filename='resources/backup.log')
     conn = get_connect()
     qbt_client = get_qbt_client()
     assert qbt_client, 'qbittorrent connect fail'
