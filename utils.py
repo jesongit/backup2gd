@@ -29,11 +29,11 @@ def load_proxy(proxy='http://127.0.0.1:7890'):
         os.environ['https_proxy'] = proxy
 
 
-def zipfile(file: Path, target_name='test', password='lemon?all'):
+def zipfile(file: Path, target_name='test', password='lemon?all', tardir=ZIP_PATH):
     """ 压缩文件/文件夹 """
     logging.debug(f'zipfile Path: {file.resolve()} to {target_name}')
     filters = [{'id': py7zr.FILTER_COPY}, {'id': py7zr.FILTER_CRYPTO_AES256_SHA256}]
-    target_path = ZIP_PATH / f'{target_name}.7z'
+    target_path = tardir / f'{target_name}.7z'
     if target_path.exists():
         logging.debug(f'{file.name} existed')
         return target_path
@@ -47,9 +47,10 @@ def zipfile(file: Path, target_name='test', password='lemon?all'):
 def backup2gd(file: Path, type, to='lemonbk1'):
     try:
         # fclone -v -u copy --transfers {同时上传文件数} --log-file {log_dir} {本地文件} {lemonbk1}:{mv}/{id.7z}
+        logging.info(f'fclone {file.resolve()} type: {type} to: {to}')
         ret = subprocess.run(f'fclone -v -u copy --transfers={FCLONE_THREAD_CNT} --log-file {FCLONE_LOG_FILE} '
                              f'{file.resolve()} {to}:{type}/{file.name}')
-        logging.info(f'backup {file.name} ret: {ret.returncode}')
+        logging.info(f'fclone {file.name} ret: {ret.returncode}')
         if ret.returncode == 0:
             remove(file)
             return True
@@ -108,9 +109,9 @@ def parse_torrent(file: Path):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    file1 = Path('resources/torrents/1.torrent')
-    data1 = parse_torrent(file1)
-    print(data1)
+    file = Path(r'C:\Users\Jeson\Desktop\MVTools')
+    tarzip = Path(r'C:\Users\Jeson\Desktop\test')
+    zipfile(file, '1', '123', tarzip)
     # conn = get_connect()
     # insert(conn, **data1)
     # insert(conn, **data2)
