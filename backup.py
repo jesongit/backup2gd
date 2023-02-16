@@ -1,12 +1,13 @@
 import time
 import logging
 import threading
+from os import mkdir
 
 from pathlib import Path
 from sqlite3 import Connection
 from qbittorrentapi import Client
 
-from global_var import TORRENTS_PATH, RAW_PATH
+from global_var import TORRENTS_PATH, RAW_PATH, ZIP_PATH
 from sqlite import get_connect, update, select, insert
 from qbittorrent import get_qbt_client, get_complete_list, download_from_file, delete_torrent
 from utils import zipfile, backup2gd, remove
@@ -69,17 +70,19 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     # logging.basicConfig(level=logging.INFO, filename='resources/backup.log')
+
+    mkdir(ZIP_PATH.resolve())
     conn = get_connect()
     qbt_client = get_qbt_client()
     assert qbt_client, 'qbittorrent connect fail'
 
+    while True:
+        deal_list = get_complete_list(qbt_client)
+        for path, data in deal_list:
+            with PRODUCER_SEMAPHORE:
+                deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
+                deal_thread.start()
+
     # download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
     # download_thread.start()
     # download_thread.join()
-
-    deal_list = get_complete_list(qbt_client)
-    for path, data in deal_list:
-        with PRODUCER_SEMAPHORE:
-            deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
-            deal_thread.start()
-            deal_thread.join()
