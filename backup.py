@@ -13,6 +13,8 @@ from utils import zipfile, backup2gd, remove
 
 MAX_DOWNLOAD_TASK = 500
 
+PRODUCER_SEMAPHORE = threading.Semaphore(10)  # 限制线程最大数量
+
 
 def deal_download_file(conn: Connection, qbt_client: Client):
     while True:
@@ -70,10 +72,13 @@ if __name__ == '__main__':
     qbt_client = get_qbt_client()
     assert qbt_client, 'qbittorrent connect fail'
 
-    deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
-    deal_thread.start()
-    deal_thread.join()
-
     # download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
     # download_thread.start()
     # download_thread.join()
+
+    deal_list = get_complete_list(qbt_client)
+    for path, data in deal_list:
+        with PRODUCER_SEMAPHORE:
+            deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
+            deal_thread.start()
+            deal_thread.join()
