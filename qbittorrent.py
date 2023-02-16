@@ -4,12 +4,12 @@ from pathlib import Path
 
 from qbittorrentapi import Client, LoginFailed
 
+from global_var import RAW_PATH
+
 QBT_USER = 'lemonall'
 QBT_PWD = 'lemonall'
 QBT_HOST = 'localhost'
-QBT_PORT = '23333'
-
-DATA_DIR = r'D:\AppData\QBDownload\raw'
+QBT_PORT = '12000'
 
 
 def get_qbt_client():
@@ -27,12 +27,12 @@ def get_qbt_client():
         return None
 
 
-def download_from_file(qbt_client: Client, file: Path, save_path=DATA_DIR):
+def download_from_file(qbt_client: Client, file: Path, save_path=RAW_PATH):
     ret = qbt_client.torrents_add(torrent_files=file.read_bytes(), save_path=save_path)
     logging.info(f'download from file: {file.name} ret: {ret}')
 
 
-def download_from_link(qbt_client: Client, urls, save_path=DATA_DIR):
+def download_from_link(qbt_client: Client, urls, save_path=RAW_PATH):
     ret = qbt_client.torrents_add(urls=urls, save_path=save_path)
     logging.info(f'download from urls: {urls} ret: {ret}')
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ROOT_PATH = Path(r'D:\AppData\QBDownload')
+ROOT_PATH = Path('/root/backup2gd/resources')
 RAW_PATH = ROOT_PATH / 'raw'
 ZIP_PATH = ROOT_PATH / 'zip'
 
