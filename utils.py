@@ -1,17 +1,16 @@
 import logging
 import os
-from shutil import rmtree
-import torrent_parser as tp
-
-import py7zr
 import subprocess
 from pathlib import Path
+from shutil import rmtree
 
-from global_var import ZIP_PATH
-from sqlite import get_connect, insert
+import py7zr
+import torrent_parser as tp
+
+from global_var import ZIP_PATH, ROOT_PATH
 
 FCLONE_THREAD_CNT = 8
-FCLONE_LOG_FILE = 'resources/fclone.log'
+FCLONE_LOG_FILE = ROOT_PATH / 'resources/fclone.log'
 
 
 def remove(path: Path):
