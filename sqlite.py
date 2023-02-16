@@ -21,7 +21,7 @@ CREATE_TABLE_SQL = f'''
 
 def get_connect():
     """ connect sqlite file """
-    conn = sqlite3.connect(f'resources/{TAB_NAME}.db')
+    conn = sqlite3.connect(f'resources/{TAB_NAME}.db', check_same_thread=False)
     cursor = conn.cursor()
     cursor.execute(CREATE_TABLE_SQL)
     conn.commit()

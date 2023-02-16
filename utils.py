@@ -31,10 +31,13 @@ def load_proxy(proxy='http://127.0.0.1:7890'):
 
 def zipfile(file: Path, target_name='test', password='lemon?all'):
     """ 压缩文件/文件夹 """
+    logging.debug(f'zipfile Path: {file.resolve()} to {target_name}')
     filters = [{'id': py7zr.FILTER_COPY}, {'id': py7zr.FILTER_CRYPTO_AES256_SHA256}]
     target_path = ZIP_PATH / f'{target_name}.7z'
     if target_path.exists():
+        logging.debug(f'{file.name} existed')
         return target_path
+    logging.debug(f'{file.name} start zip.')
     with py7zr.SevenZipFile(target_path.resolve(), 'w', filters=filters, password=password) as archive:
         archive.writeall(file.resolve(), file.name)
         logging.info(f'zipfile {file.name} => {target_path.name}')
