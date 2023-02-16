@@ -49,11 +49,12 @@ def backup2gd(file: Path, type, to='lemonbk1'):
         cmd = f'fclone -v -u copy --transfers={FCLONE_THREAD_CNT} ' \
               f'--log-file {FCLONE_LOG_FILE} {file.resolve()} {to}:{type}/{file.name}'
         logging.debug(f'fclone {file.resolve()} type: {type} to: {to}\ncmd: {cmd}')
-        ret = subprocess.run(cmd)
+        ret = subprocess.run(cmd, shell=True)
         logging.debug(f'fclone {file.name} ret: {ret.returncode}')
-        if ret.returncode == 0:
-            remove(file)
-            return True
+        assert ret.returncode == 0, f'name: {file.name} ret: {ret.returncode}'
+
+        remove(file)
+        return True
     except Exception as e:
         logging.info(f'fclone file Fail {e.args}')
         return False

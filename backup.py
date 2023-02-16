@@ -35,7 +35,6 @@ def deal_download_file(conn: Connection, qbt_client: Client, path: Path, data):
         logging.info(f'zip complete. {name}')
 
         # 删除源文件
-        remove(path)
         delete_torrent(qbt_client, hash=data['hash'])
         logging.info(f'delete complete. {name}')
 
