@@ -17,39 +17,34 @@ MAX_DOWNLOAD_TASK = 500
 PRODUCER_SEMAPHORE = threading.Semaphore(10)  # 限制线程最大数量
 
 
-def deal_download_file(conn: Connection, qbt_client: Client):
-    while True:
-        try:
-            deal_list = get_complete_list(qbt_client)
-            for path, data in deal_list:
+def deal_download_file(conn: Connection, qbt_client: Client, path: Path, data):
+    try:
+        logging.info(f'start deal {data}')
+        # 记录到数据库
+        name = data['name']
+        path = Path(path)
+        assert path.exists(), 'file no exist.'
+        insert(conn, **data)
+        logging.info(f'insert to db. {name}')
 
-                logging.info(f'start deal {data}')
-                # 记录到数据库
-                name = data['name']
-                path = Path(path)
-                assert path.exists(), 'file no exist.'
-                insert(conn, **data)
-                logging.info(f'insert to db. {name}')
+        # 压缩文件
+        uid = data['uid']
+        where = [('uid', uid)]
+        zip_path = zipfile(path, uid)
+        update(conn, where=where, state=2)
+        logging.info(f'zip complete. {name}')
 
-                # 压缩文件
-                uid = data['uid']
-                where = [('uid', uid)]
-                zip_path = zipfile(path, uid)
-                update(conn, where=where, state=2)
-                logging.info(f'zip complete. {name}')
+        # 删除源文件
+        remove(path)
+        delete_torrent(qbt_client, hash=data['hash'])
+        logging.info(f'delete complete. {name}')
 
-                # 删除源文件
-                remove(path)
-                delete_torrent(qbt_client, hash=data['hash'])
-                logging.info(f'delete complete. {name}')
-
-                # 备份到gd
-                if backup2gd(zip_path, data['type']):
-                    update(conn, where=where, state=3)
-                    logging.info(f'backup complete. {name}')
-            time.sleep(60)
-        except Exception as e:
-            logging.error(f'deal file error {e.args}')
+        # 备份到gd
+        if backup2gd(zip_path, data['type']):
+            update(conn, where=where, state=3)
+            logging.info(f'backup complete. {name}')
+    except Exception as e:
+        logging.error(f'deal file error {e.args}')
 
 
 def download_from_lemon(conn: Connection, qbt_client: Client):
@@ -80,7 +75,8 @@ if __name__ == '__main__':
         deal_list = get_complete_list(qbt_client)
         for path, data in deal_list:
             with PRODUCER_SEMAPHORE:
-                deal_thread = threading.Thread(target=deal_download_file, args=(conn, qbt_client), daemon=True)
+                deal_thread = threading.Thread(target=deal_download_file,
+                                               args=(conn, qbt_client, path, data), daemon=True)
                 deal_thread.start()
 
     # download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
