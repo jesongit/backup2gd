@@ -67,7 +67,8 @@ def download_from_lemon(conn: Connection, qbt_client: Client):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO, filename='resources/backup.log')
+    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.INFO, filename='resources/backup.log')
     conn = get_connect()
     qbt_client = get_qbt_client()
     assert qbt_client, 'qbittorrent connect fail'
