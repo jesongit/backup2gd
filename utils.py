@@ -10,7 +10,7 @@ import torrent_parser as tp
 from global_var import ZIP_PATH, ROOT_PATH
 
 FCLONE_THREAD_CNT = 8
-FCLONE_LOG_FILE = ROOT_PATH / 'resources/fclone.log'
+FCLONE_LOG_FILE = ROOT_PATH / 'fclone.log'
 
 
 def remove(path: Path):

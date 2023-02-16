@@ -66,7 +66,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     # logging.basicConfig(level=logging.INFO, filename='resources/backup.log')
 
-    mkdir(ZIP_PATH.resolve())
+    if not ZIP_PATH.exists():
+        mkdir(ZIP_PATH.resolve())
     conn = get_connect()
     qbt_client = get_qbt_client()
     assert qbt_client, 'qbittorrent connect fail'
