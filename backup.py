@@ -9,7 +9,7 @@ from qbittorrentapi import Client
 from global_var import TORRENTS_PATH, RAW_PATH
 from sqlite import get_connect, update, select, insert
 from qbittorrent import get_qbt_client, get_complete_list, download_from_file
-from utils import zipfile, backup2gd, remove, parse_torrent
+from utils import zipfile, backup2gd, remove
 
 MAX_DOWNLOAD_TASK = 500
 
@@ -18,16 +18,10 @@ def deal_download_file(conn: Connection, qbt_client: Client):
     while True:
         try:
             deal_list = get_complete_list(qbt_client)
-            for path, ctime, hash, size in deal_list:
+            for data in deal_list:
 
-                path = Path(path)
+                path = Path(data['path'])
                 assert path.exists(), 'file no exist.'
-
-                data = parse_torrent(path)
-                data['time'] = ctime
-                data['hash'] = hash
-                data['size'] = size
-                data['state'] = 1
                 insert(conn, **data)
 
                 uid = data['uid']

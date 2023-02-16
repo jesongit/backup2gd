@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 from qbittorrentapi import Client, LoginFailed
@@ -44,12 +45,26 @@ def get_complete_list(qbt_client: Client):
     for torrent in qbt_client.torrents_info():
         if len(complete_list) > 100:
             return complete_list
+
         time = torrent['completion_on']
         if time > 0:
+            torrent_hash = torrent['hash']
             path = torrent['content_path']
-            hash = torrent['hash']
-            size = torrent['size']
-            complete_list.append((path, time, hash, size))
+            properties = qbt_client.torrents_properties(torrent_hash=torrent_hash)
+
+            comment = properties['comment']
+            uid = int(comment.split('=')[-1])
+            type = re.match(r'.*details_(.*?)\..*', comment).groups()[0]
+            data = {
+                'uid': uid,
+                'name': torrent['name'],
+                'type': type,
+                'size': properties['total_size'],
+                'hash': torrent_hash,
+                'time': time,
+                'state': 1
+            }
+            complete_list.append(data)
 
     return complete_list
 
@@ -66,12 +81,17 @@ if __name__ == '__main__':
     # download_from_file(qbt_client, file)
     # download_from_link(qbt_client, urls)
     for torrent in qbt_client.torrents_info():
-        for k, v in torrent.items():
-            print(k, v)
-        finish_time = torrent['completion_on']
-        path = Path(torrent['content_path'])
-        hash = torrent['hash']
-        size = torrent['size']
+        # for k, v in torrent.items():
+        #     print(k, v)
+        torrent_hash = torrent['hash']
+        print('- - - -- - - - - - - -- - - - - - - - - - - - -  -- - -')
+        properties = qbt_client.torrents_properties(torrent_hash=torrent_hash)
+        comment = properties['comment']
+        uid = int(comment.split('=')[-1])
+        type = re.match(r'.*details_(.*?)\..*', comment).groups()[0]
+        print(torrent_hash, uid, type)
+        # for k, v in data.items():
+        #     print(k, v)
         print('---------------------------------------------------------')
     # print(get_complete_list(qbt_client))
     # print(qbt_client.torrents_info())

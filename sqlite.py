@@ -10,13 +10,11 @@ CREATE_TABLE_SQL = f'''
     create table if not exists {TAB_NAME}(
         uid integer primary key not null,               -- torrent_id
         name text not null,                             -- 种子名
+        type text not null,                             -- 文件分类
         size integer default 0,                         -- 文件大小
-        is_file integer not null,                       -- 是否单文件
         hash text default '',                           -- Hash
         time integer default 0,                         -- 下载完成时间
-        files text not null,                            -- 文件列表
-        announce text not null,                         -- tracker服务器
-        statue integer default 0,                       -- 状态 1 下载完成 2 压缩完成 3 上传完成
+        state integer default 0,                       -- 状态 1 下载完成 2 压缩完成 3 上传完成
         create_time integer default current_timestamp   -- 添加时间
     );'''
 
