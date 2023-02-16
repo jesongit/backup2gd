@@ -78,6 +78,7 @@ if __name__ == '__main__':
                 deal_thread = threading.Thread(target=deal_download_file,
                                                args=(conn, qbt_client, path, data), daemon=True)
                 deal_thread.start()
+        time.sleep(300)
 
     # download_thread = threading.Thread(target=download_from_lemon, args=(conn, qbt_client), daemon=True)
     # download_thread.start()
