@@ -46,8 +46,8 @@ def zipfile(file: Path, target_name='test', password='lemon?all', tardir=ZIP_PAT
 def backup2gd(file: Path, type, to='lemonbk1'):
     try:
         # fclone -v -u copy --transfers {同时上传文件数} --log-file {log_dir} {本地文件} {lemonbk1}:{mv}/{id.7z}
-        cmd = f'fclone -v -u copy --transfers={FCLONE_THREAD_CNT} ' \
-              f'--log-file {FCLONE_LOG_FILE} {file.resolve()} {to}:{type}'
+        cmd = f'fclone -v -u copyto --transfers={FCLONE_THREAD_CNT} ' \
+              f'--log-file {FCLONE_LOG_FILE} {file.resolve()} {to}:{type}/{file.name}'
         logging.debug(f'fclone {file.resolve()} type: {type} to: {to}\ncmd: {cmd}')
         ret = subprocess.run(cmd, shell=True)
         logging.debug(f'fclone {file.name} ret: {ret.returncode}')
