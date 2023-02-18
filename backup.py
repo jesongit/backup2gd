@@ -24,6 +24,10 @@ def deal_download_file(conn: Connection, qbt_client: Client, path: Path, data):
         name = data['name']
         path = Path(path)
         assert path.exists(), 'file no exist.'
+
+        # 删除qb中的种子，防止后面重复处理
+        delete_torrent(qbt_client, hash=data['hash'])
+
         insert(conn, **data)
         logging.info(f'insert to db. {name}')
 
@@ -35,7 +39,7 @@ def deal_download_file(conn: Connection, qbt_client: Client, path: Path, data):
         logging.info(f'zip complete. {name}')
 
         # 删除源文件
-        delete_torrent(qbt_client, hash=data['hash'])
+        remove(path)
         logging.info(f'delete complete. {name}')
 
         # 备份到gd

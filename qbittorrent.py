@@ -70,7 +70,7 @@ def get_complete_list(qbt_client: Client):
 
 
 def delete_torrent(qbt_client: Client, hash: str):
-    qbt_client.torrents_delete(delete_files=True, torrent_hashes=hash)
+    qbt_client.torrents_delete(delete_files=False, torrent_hashes=hash)
 
 
 if __name__ == '__main__':
