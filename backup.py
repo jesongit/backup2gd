@@ -19,33 +19,34 @@ PRODUCER_SEMAPHORE = threading.Semaphore(10)  # 限制线程最大数量
 
 def deal_download_file(conn: Connection, qbt_client: Client, path: Path, data):
     try:
-        logging.info(f'start deal {data}')
-        # 记录到数据库
-        name = data['name']
-        path = Path(path)
-        assert path.exists(), 'file no exist.'
+        with PRODUCER_SEMAPHORE:
+            logging.info(f'start deal {data}')
+            # 记录到数据库
+            name = data['name']
+            path = Path(path)
+            assert path.exists(), 'file no exist.'
 
-        # 删除qb中的种子，防止后面重复处理
-        delete_torrent(qbt_client, hash=data['hash'])
+            # 删除qb中的种子，防止后面重复处理
+            delete_torrent(qbt_client, hash=data['hash'])
 
-        insert(conn, **data)
-        logging.info(f'insert to db. {name}')
+            insert(conn, **data)
+            logging.info(f'insert to db. {name}')
 
-        # 压缩文件
-        uid = data['uid']
-        where = [('uid', uid)]
-        zip_path = zipfile(path, uid)
-        update(conn, where=where, state=2)
-        logging.info(f'zip complete. {name}')
+            # 压缩文件
+            uid = data['uid']
+            where = [('uid', uid)]
+            zip_path = zipfile(path, uid)
+            update(conn, where=where, state=2)
+            logging.info(f'zip complete. {name}')
 
-        # 删除源文件
-        remove(path)
-        logging.info(f'delete complete. {name}')
+            # 删除源文件
+            remove(path)
+            logging.info(f'delete complete. {name}')
 
-        # 备份到gd
-        if backup2gd(zip_path, data['type']):
-            update(conn, where=where, state=3)
-            logging.info(f'backup complete. {name}')
+            # 备份到gd
+            if backup2gd(zip_path, data['type']):
+                update(conn, where=where, state=3)
+                logging.info(f'backup complete. {name}')
     except Exception as e:
         logging.error(f'deal file error {e.args}')
 
@@ -78,7 +79,6 @@ if __name__ == '__main__':
     while True:
         deal_list = get_complete_list(qbt_client)
         for path, data in deal_list:
-            with PRODUCER_SEMAPHORE:
                 deal_thread = threading.Thread(target=deal_download_file,
                                                args=(conn, qbt_client, path, data), daemon=True)
                 deal_thread.start()
